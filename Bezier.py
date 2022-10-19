@@ -6,6 +6,15 @@ class Point:
         self.x = x
         self.y = y
 
+    def add(self, other):
+        return Point(self.x + other, self.y + other)
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def mul(self, other):
+        return Point(self.x * other, self.y * other)
+
     def __str__(self):
         return "X: " + str(self.x) + " Y: " + str(self.y) + "\n"
 
@@ -59,12 +68,23 @@ class Bezier:
 
     @staticmethod
     def lerp(point0, point1, t):
-        x = (1 - t) * point0.x + t * point1.x
-        y = (1 - t) * point0.y + t * point1.y
-        return Point(x, y)
+        """
+        Perform linear interpolation between two points. ex. t=0.5 is halfway between them
+        :param point0:
+        :param point1:
+        :param t: the time to interpolate at
+        :return: the linear interpolated point
+        """
+        return point0.mul(1 - t) + point1.mul(t)
 
     @staticmethod
     def recursive_lerp(points, time):
+        """
+        Recursively perform linear interpolation between a list of control points given a time along the bezier curve (t is 0-1)
+        :param points: The list of control points to perform recursive linear interpolation on
+        :param time: the moment in time to grab the current point
+        :return: The point into the curve based on the time and set of control points
+        """
         if len(points) == 2:
             return Bezier.lerp(points[0], points[1], time)
 
@@ -91,17 +111,6 @@ class Bezier:
             y_list.append(point.y)
         return y_list
 
-    @staticmethod
-    def norm(nums):
-        normalized_list = []
-
-        maximum = max(nums)
-        minimum = min(nums)
-
-        for item in nums:
-            normalized_list.append((item - minimum) / (maximum - minimum))
-        return normalized_list
-
     # Returns index of x in arr if present, else -1
     @staticmethod
     def binary_search(arr, low, high, x):
@@ -111,7 +120,7 @@ class Bezier:
             mid = (high + low) // 2
 
             # If element is present at the middle itself
-            if arr[mid-1] < x < arr[mid+1]:
+            if arr[mid - 1] < x < arr[mid + 1]:
                 return mid
 
             # If element is smaller than mid, then it can only
@@ -151,17 +160,17 @@ class Bezier:
         cumulative_distance = 0
         for i in range(0, len(self.point_storage) - 1):
             distance = math.sqrt((self.point_storage[i + 1].x - self.point_storage[i].x) ** 2 + (
-                        self.point_storage[i + 1].y - self.point_storage[i].y) ** 2)
+                    self.point_storage[i + 1].y - self.point_storage[i].y) ** 2)
             cumulative_distance += distance
             self.distances.append(cumulative_distance)
 
     def find_time_for_distance(self, distance):
-        index = self.binary_search(self.distances, 0, len(self.distances)-1, distance)
+        index = self.binary_search(self.distances, 0, len(self.distances) - 1, distance)
         time = index * self.resolution
         return time
 
     def find_point_for_distance(self, distance):
-        index = self.binary_search(self.distances, 0, len(self.distances)-1, distance)
+        index = self.binary_search(self.distances, 0, len(self.distances) - 1, distance)
         return self.point_storage[index]
 
     def compose_equal_distance_bezier(self):
@@ -174,8 +183,10 @@ class Bezier:
     def calculate_equal_distance_velocity(self):
         for i in range(0, len(self.equally_spaced_points) - 1):
             # Calculate the x and y velocity components (first deriv)
-            derivative_x = (self.equally_spaced_points[i + 1].x - self.equally_spaced_points[i].x) / (self.equally_spaced_times[i + 1] - self.equally_spaced_times[i])
-            derivative_y = (self.equally_spaced_points[i + 1].y - self.equally_spaced_points[i].y) / (self.equally_spaced_times[i + 1] - self.equally_spaced_times[i])
+            derivative_x = (self.equally_spaced_points[i + 1].x - self.equally_spaced_points[i].x) / (
+                        self.equally_spaced_times[i + 1] - self.equally_spaced_times[i])
+            derivative_y = (self.equally_spaced_points[i + 1].y - self.equally_spaced_points[i].y) / (
+                        self.equally_spaced_times[i + 1] - self.equally_spaced_times[i])
 
             # Calculate the total derivative and angle of the bezier curve (magnitude of (derivative_x, derivative_y)
             velocity = math.sqrt(derivative_x ** 2 + derivative_y ** 2)
