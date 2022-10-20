@@ -139,6 +139,10 @@ class Bezier:
             # Element is not present in the array
             return -1
 
+    @staticmethod
+    def divide(n, d):
+        return n / d if d else 0
+
     # Calculate the derivative of the bezier in x and y, the velocity, and the total (or raw) derivative of the curve
     def calculate_bezier_derivative(self):
         for i in range(0, len(self.point_storage) - 1):
@@ -152,7 +156,7 @@ class Bezier:
             self.velocity.append(velocity)
 
             # Calculate the total derivative
-            self.total_derivative.append((derivative_y * self.resolution) / (derivative_x * self.resolution))
+            self.total_derivative.append(self.divide((derivative_y * self.resolution), (derivative_x * self.resolution)))
 
             # Calculate the current angle
             self.angles.append(math.degrees(math.atan2((derivative_y * self.resolution),
