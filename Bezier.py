@@ -9,6 +9,9 @@ class Point:
     def add(self, other):
         return Point(self.x + other, self.y + other)
 
+    def distance_to(self, other):
+        return math.hypot(abs(other.x-self.x), abs(other.y-self.y))
+
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
 
